@@ -23,7 +23,7 @@
 import math
 from abc import ABC, abstractmethod
 
-from models import PlateConstellation, PlateStar
+from .models import PlateConstellation, PlateStar
 
 
 class BasicTransformer(ABC):

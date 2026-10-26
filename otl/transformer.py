@@ -21,14 +21,15 @@
 """天球の星から、複数の投影機ユニットに配置された原板の星への変換。"""
 
 import math
+import os
 import sys
 
-from basic_transformer import BasicTransformer
-from config import load_properties
-from mathvector import MathVector
-from models import PlatePosition, SpherePosition
-from plate_polygon import PlateAssignmentPolygonGenerator
-from plate_writer import (
+from .basic_transformer import BasicTransformer
+from .config import load_properties
+from .mathvector import MathVector
+from .models import PlatePosition, SpherePosition
+from .plate_polygon import PlateAssignmentPolygonGenerator
+from .plate_writer import (
     DEFAULT_OUTPUT_DIR,
     PlateWriterPDF,
     PlateWriterSVG,
@@ -36,8 +37,12 @@ from plate_writer import (
     categorized_output_dir,
     resolve_output_path,
 )
-from sphere_reader import SphereReader
-from unit_arrangement import CustomUnitArrangement, InvalidUnitArrangementException, StandardUnitArrangement
+from .sphere_reader import SphereReader
+from .unit_arrangement import CustomUnitArrangement, InvalidUnitArrangementException, StandardUnitArrangement
+
+# -f も -i も指定されなかったときに読み込む設定ファイル。カレントディレクトリに関わらず見つけられるよう、このファイルの場所を基準にする。
+DEFAULT_CONFIG_FILE = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config", "starconfig.properties")
 
 # 浮動小数点の計算で生じる誤差よりも十分大きな数 ここでは 2^-16
 _EPS = 0.0000152587890625
@@ -260,10 +265,11 @@ class Transformer(BasicTransformer):
 def _usage():
     """このプログラムの使い方を表示します。"""
     print("Usage:")
-    print("\tpython transformer.py [options]")
+    print("\tpython -m otl [options]")
     print("Options:")
     print("\t-PDF\t原板データを印刷用PDF形式で出力します。")
-    print("\t-f [configFile]\tプラネタリウムの設定を configFile から読み込みます。")
+    print("\t-f [configFile]\tプラネタリウムの設定を configFile から読み込みます。省略時は config/starconfig.properties を使います。")
+    print("\t-i\t設定ファイルを使わず、対話形式で設定を入力します。")
     print("\t--polygons\t原盤ごとの担当星域ポリゴンを原板と同じ形式で出力します。")
     print("\t-h,-help\tこのメッセージを表示します。")
 
@@ -607,6 +613,7 @@ def main(argv=None):
     writer_type = PlateWriterType.SVG
     writer_type_explicit = False
     config_file_name = None
+    interactive = False
     force_polygons = False
     # コマンドライン引数を解釈
     i = 0
@@ -619,6 +626,8 @@ def main(argv=None):
             return 2
         elif argv[i] == "--polygons":
             force_polygons = True
+        elif argv[i] in ("-i", "--interactive"):
+            interactive = True
         elif argv[i] == "-f":
             if i + 1 >= len(argv):
                 print("入力ファイルが指定されていません。", file=sys.stderr)
@@ -632,6 +641,10 @@ def main(argv=None):
             _usage()
             return
         i += 1
+    if config_file_name is None and not interactive:
+        config_file_name = DEFAULT_CONFIG_FILE
+    if config_file_name is not None:
+        print(f"設定ファイル {config_file_name} を読み込みます。")
     props = load_properties(config_file_name) if config_file_name is not None else None
     t = _init_transformer(props)
     if t is None:

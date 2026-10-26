@@ -22,7 +22,7 @@
 
 import math
 
-from mathvector import MathVector
+from .mathvector import MathVector
 
 # 浮動小数点の計算で生じる誤差よりも十分大きな数 ここでは 2^-16
 _EPS = 0.0000152587890625

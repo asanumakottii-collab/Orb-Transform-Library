@@ -23,8 +23,8 @@
 import math
 from abc import ABC, abstractmethod
 
-from mathvector import MathVector
-from geometry import GeneralizedCone, Polyhedron
+from .mathvector import MathVector
+from .geometry import GeneralizedCone, Polyhedron
 
 # 浮動小数点の計算で生じる誤差よりも十分大きな数 ここでは 2^-16
 _EPS = 0.0000152587890625

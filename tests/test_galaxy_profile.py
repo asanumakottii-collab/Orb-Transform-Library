@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 
-from galaxy_profile import exponential_scale_arcsec
+from otl.galaxy_profile import exponential_scale_arcsec
 
 
 class ExponentialGalaxyProfileTests(unittest.TestCase):

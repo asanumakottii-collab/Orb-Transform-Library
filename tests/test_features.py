@@ -7,13 +7,13 @@ from io import StringIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from basic_transformer import BasicTransformer
-from mathvector import MathVector
-from models import PlateConstellation, PlatePosition, PlateStar, SpherePosition, SphereStar
-from plate_polygon import PlateAssignmentPolygonGenerator
-from plate_writer import PlateWriterPDF, PlateWriterSVG, PlateWriterType, categorized_output_dir
-from sphere_reader import SphereReader
-from transformer import (
+from otl.basic_transformer import BasicTransformer
+from otl.mathvector import MathVector
+from otl.models import PlateConstellation, PlatePosition, PlateStar, SpherePosition, SphereStar
+from otl.plate_polygon import PlateAssignmentPolygonGenerator
+from otl.plate_writer import PlateWriterPDF, PlateWriterSVG, PlateWriterType, categorized_output_dir
+from otl.sphere_reader import SphereReader
+from otl.transformer import (
     _PlateWriterGroup,
     Transformer,
     _init_enlarge_constellation_names,
@@ -24,7 +24,7 @@ from transformer import (
     _parse_constellation_names,
     _write_assignment_polygons,
 )
-from unit_arrangement import CustomUnitArrangement
+from otl.unit_arrangement import CustomUnitArrangement
 
 
 _HAS_REPORTLAB = importlib.util.find_spec("reportlab") is not None
@@ -451,7 +451,7 @@ class SphereReaderSettingsTests(unittest.TestCase):
                         "rc3.enabled": "yes" if rc3_enabled else "no",
                     }
                     output = StringIO()
-                    with patch("transformer.SphereReader") as reader, patch("sys.stdout", output):
+                    with patch("otl.transformer.SphereReader") as reader, patch("sys.stdout", output):
                         _init_sphere_reader(props)
                     reader.assert_called_once_with(
                         False, 1.5, 7.5, under_minimum, rc3_enabled=rc3_enabled
@@ -467,7 +467,7 @@ class SphereReaderSettingsTests(unittest.TestCase):
                     )
 
     def test_omitted_rc3_setting_is_disabled_even_with_faint_stars_enabled(self):
-        with patch("transformer.SphereReader") as reader, patch("sys.stdout", StringIO()):
+        with patch("otl.transformer.SphereReader") as reader, patch("sys.stdout", StringIO()):
             _init_sphere_reader({"star.under-minimum": "yes"})
         reader.assert_called_once_with(True, 1.5, 7.5, True, rc3_enabled=False)
 
@@ -477,7 +477,7 @@ class SphereReaderSettingsTests(unittest.TestCase):
                 with self.subTest(under_minimum=under_minimum, rc3_enabled=rc3_enabled):
                     answers = ["n", "", "", "y" if under_minimum else "n", "y" if rc3_enabled else ""]
                     with patch("builtins.input", side_effect=answers), \
-                            patch("transformer.SphereReader") as reader, \
+                            patch("otl.transformer.SphereReader") as reader, \
                             patch("sys.stdout", StringIO()):
                         _init_sphere_reader(None)
                     reader.assert_called_once_with(
@@ -657,7 +657,7 @@ class PDFWriterTests(unittest.TestCase):
             output.write_bytes(b"existing PDF")
             writer = PlateWriterPDF(1, 1, 37.5, True, "print-", False, directory)
             writer.write_star(_plate_star())
-            with patch("plate_writer.os.replace", side_effect=TimeoutError(60, "Operation timed out")):
+            with patch("otl.plate_writer.os.replace", side_effect=TimeoutError(60, "Operation timed out")):
                 with self.assertRaises(OSError) as error:
                     writer.close()
             self.assertEqual(str(output), error.exception.filename)
@@ -779,7 +779,7 @@ class OutputFormatCLITests(unittest.TestCase):
         self.assertEqual([], polygon_types)
 
     def test_interactive_main_routes_stars_and_polygons_to_both_formats(self):
-        from transformer import main as star_main
+        from otl.transformer import main as star_main
 
         transformer = MagicMock()
         reader = MagicMock()
@@ -791,19 +791,19 @@ class OutputFormatCLITests(unittest.TestCase):
         }
         both_types = [PlateWriterType.SVG, PlateWriterType.PDF]
         with (
-            patch("transformer._init_transformer", return_value=transformer),
-            patch("transformer._init_sphere_reader", return_value=reader),
+            patch("otl.transformer._init_transformer", return_value=transformer),
+            patch("otl.transformer._init_sphere_reader", return_value=reader),
             patch(
-                "transformer._select_interactive_output_types",
+                "otl.transformer._select_interactive_output_types",
                 return_value=(both_types, both_types),
             ),
-            patch("transformer._init_plate_writers", return_value=writers),
-            patch("transformer._init_enlarge_rate", return_value=0.0),
-            patch("transformer._write_assignment_polygons") as write_polygons,
+            patch("otl.transformer._init_plate_writers", return_value=writers),
+            patch("otl.transformer._init_enlarge_rate", return_value=0.0),
+            patch("otl.transformer._write_assignment_polygons") as write_polygons,
             patch("builtins.input", return_value="n"),
             patch("sys.stdout", new_callable=StringIO),
         ):
-            star_main([])
+            star_main(["-i"])
 
         output_writer = transformer.process_stars.call_args.args[1]
         self.assertIsInstance(output_writer, _PlateWriterGroup)
@@ -821,7 +821,7 @@ class OutputFormatCLITests(unittest.TestCase):
     def test_interactive_svg_writer_can_invert_plate_and_star_colors(self):
         with (
             tempfile.TemporaryDirectory() as directory,
-            patch("transformer.DEFAULT_OUTPUT_DIR", directory),
+            patch("otl.transformer.DEFAULT_OUTPUT_DIR", directory),
             patch("builtins.input", side_effect=["1", "1", "0", "yes"]),
             patch("sys.stdout", new_callable=StringIO) as stdout,
         ):
@@ -841,7 +841,7 @@ class OutputFormatCLITests(unittest.TestCase):
     def test_interactive_svg_writer_keeps_non_inverted_default(self):
         with (
             tempfile.TemporaryDirectory() as directory,
-            patch("transformer.DEFAULT_OUTPUT_DIR", directory),
+            patch("otl.transformer.DEFAULT_OUTPUT_DIR", directory),
             patch("builtins.input", side_effect=["", "", "", ""]),
             patch("sys.stdout", new_callable=StringIO),
         ):
@@ -869,8 +869,19 @@ class OutputFormatCLITests(unittest.TestCase):
                 writer.close()
             self.assertTrue(Path(directory, "star_SVG", "star-0.svg").is_file())
 
+    def test_main_reads_bundled_config_without_options(self):
+        from otl.transformer import DEFAULT_CONFIG_FILE, main as star_main
+
+        self.assertTrue(Path(DEFAULT_CONFIG_FILE).is_file())
+        with (patch("otl.transformer.load_properties", return_value={}) as load,
+              patch("otl.transformer._init_transformer", return_value=None),
+              patch("sys.stdout", new_callable=StringIO),
+              patch("sys.stderr", new_callable=StringIO)):
+            star_main([])
+        load.assert_called_once_with(DEFAULT_CONFIG_FILE)
+
     def test_deprecated_postscript_option_stops_star_command(self):
-        from transformer import main as star_main
+        from otl.transformer import main as star_main
 
         with (patch("sys.stdout", new_callable=StringIO),
               patch("sys.stderr", new_callable=StringIO) as stderr):
@@ -878,19 +889,19 @@ class OutputFormatCLITests(unittest.TestCase):
             self.assertIn("-PDF", stderr.getvalue())
 
     def test_pdf_mode_processes_constellations_in_star_command(self):
-        from transformer import main as star_main
+        from otl.transformer import main as star_main
 
         transformer = MagicMock()
         reader = MagicMock()
         writer = MagicMock()
-        with (patch("transformer._init_transformer", return_value=transformer),
-              patch("transformer._init_sphere_reader", return_value=reader),
-              patch("transformer._init_plate_writer", return_value=writer),
-              patch("transformer._init_enlarge_rate", return_value=0.0),
-              patch("transformer._write_assignment_polygons"),
+        with (patch("otl.transformer._init_transformer", return_value=transformer),
+              patch("otl.transformer._init_sphere_reader", return_value=reader),
+              patch("otl.transformer._init_plate_writer", return_value=writer),
+              patch("otl.transformer._init_enlarge_rate", return_value=0.0),
+              patch("otl.transformer._write_assignment_polygons"),
               patch("builtins.input", return_value="y"),
               patch("sys.stdout", new_callable=StringIO) as stdout):
-            star_main(["-PDF"])
+            star_main(["-i", "-PDF"])
 
         self.assertIn("星座を処理しますか。(y/N)", stdout.getvalue())
         transformer.process_constellations.assert_called_once_with(reader, writer)

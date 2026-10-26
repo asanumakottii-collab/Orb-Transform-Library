@@ -26,7 +26,7 @@ import tempfile
 from abc import ABC, abstractmethod
 from enum import Enum
 
-DEFAULT_OUTPUT_DIR = "output"
+DEFAULT_OUTPUT_DIR = os.path.join("output", "default")
 
 # SVGのpoints属性にはmmなどの単位を付けられないため、絶対長で記述した円・文字と座標を揃える際にCSS標準の96 dpiへ変換する。
 _CSS_PIXELS_PER_MM = 96. / 25.4

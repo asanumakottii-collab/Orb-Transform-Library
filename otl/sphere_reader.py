@@ -27,12 +27,12 @@ import math
 import os
 import random
 
-from galaxy_profile import exponential_scale_arcsec
-from mathvector import MathVector
-from models import SphereConstellation, SpherePosition, SphereStar
+from .galaxy_profile import exponential_scale_arcsec
+from .mathvector import MathVector
+from .models import SphereConstellation, SpherePosition, SphereStar
 
-# hip_main.dat 等のカタログはこのモジュールと同じフォルダに置く。実行時のカレントディレクトリに関わらず python フォルダ単体で完結させるため、カレントディレクトリではなくこのファイルの場所を基準に探す。
-_DATA_DIR = os.path.dirname(os.path.abspath(__file__))
+# hip_main.dat 等のカタログはリポジトリ直下の data フォルダに置く。実行時のカレントディレクトリに関わらず見つけられるよう、カレントディレクトリではなくこのファイルの場所を基準に探す。
+_DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
 
 # OTL_prog の hip_constellation_line_star.csv にだけ含まれ、IAU88.hlc のHIPブロックには無い星。補助CSVを同梱しない配布形態でも旧版と同じ対象を拡大できるよう、HIP番号だけを保持する。
 _LEGACY_CONSTELLATION_STAR_HIP_NUMBERS = {

@@ -22,7 +22,7 @@
 
 import math
 
-from mathvector import MathVector
+from .mathvector import MathVector
 
 
 class PlatePosition:

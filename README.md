@@ -12,39 +12,54 @@ git lfs pull
 python3 -m pip install -r requirements.txt
 ```
 
-カタログファイル `hip_main.dat`、`tyc_main.dat`、`rc3.dat`、`IAU88.hlc` は、スクリプトと同じディレクトリに配置します。`tyc_main.dat` は Git LFS で取得します。
+カタログファイル `hip_main.dat`、`tyc_main.dat`、`rc3.dat`、`IAU88.hlc` は `data/` に配置します。`tyc_main.dat` は Git LFS で取得します。
+
+## フォルダ構成
+
+| フォルダ | 内容 |
+|---|---|
+| `otl/` | Python パッケージ本体（`python3 -m otl` で実行） |
+| `data/` | 星表・星座カタログ |
+| `config/` | 設定ファイル `starconfig.properties` と拡大星座リストの例 `constellations.txt` |
+| `output/` | 生成物（`default/`: 既定の出力先、`inverse/`: 同梱設定ファイルの出力先） |
+| `tests/` | テスト（`python3 -m unittest discover tests`） |
+
+コマンドはいずれもリポジトリ直下で実行します。
 
 ## 使い方
+
+### 設定ファイルで実行する
+
+[config/starconfig.properties](config/starconfig.properties) を投影機に合わせて編集し、実行します。オプションを付けなければこの設定ファイルが読み込まれます。
+
+```bash
+# 恒星原板を SVG で出力
+python3 -m otl
+
+# PDF で出力
+python3 -m otl -PDF
+
+# 担当星域ポリゴンも出力（-PDF と併用可能）
+python3 -m otl --polygons
+
+# 別の設定ファイルを使う
+python3 -m otl -f my_config.properties
+
+# ヘルプを表示
+python3 -m otl -h
+```
 
 ### 対話形式で実行する
 
 ```bash
-python3 transformer.py
+python3 -m otl -i
 ```
 
 表示される質問に従って、投影機の寸法や星の明るさなどを入力します。出力形式は `star_SVG`、`star_pdf`、`polygon_SVG`、`polygon_pdf` から複数選択でき、未入力なら `star_SVG` のみを出力します。
 
-### 設定ファイルで実行する
-
-[starconfig.properties](starconfig.properties) を投影機に合わせて編集し、実行します。
-
-```bash
-# 恒星原板を SVG で出力
-python3 transformer.py -f starconfig.properties
-
-# PDF で出力
-python3 transformer.py -PDF -f starconfig.properties
-
-# 担当星域ポリゴンも出力（-PDF と併用可能）
-python3 transformer.py --polygons -f starconfig.properties
-
-# ヘルプを表示
-python3 transformer.py -h
-```
-
 ### 主な設定
 
-寸法の単位は mm です。その他の設定やユニット配置の個別指定は、[設定ファイルのコメント](starconfig.properties)を参照してください。
+寸法の単位は mm です。その他の設定やユニット配置の個別指定は、[設定ファイルのコメント](config/starconfig.properties)を参照してください。
 
 | 設定 | 内容 |
 |---|---|
@@ -84,7 +99,7 @@ star.enlarge-constellations = Orion, Canis Major
 - `star.enlarge-rate`: `0`〜`2`。`0` で拡大なし、`1.0` で 4 等星相当の穴が 1 等級分大きくなります。明るい星ほど拡大効果を抑えます。
 - `star.enlarge-constellations`: `IAU88.hlc` の `Name:` にある星座名をカンマ区切りで指定します。空欄なら全星座が対象です。
 
-対話モードでは、対象の星座名を 1 行に 1 つ記載した UTF-8 テキストファイルのパスを入力します。空欄なら全星座が対象です。
+対話モードでは、対象の星座名を 1 行に 1 つ記載した UTF-8 テキストファイル（例: `config/constellations.txt`）のパスを入力します。空欄なら全星座が対象です。
 
 ### 担当星域を出力する
 
@@ -94,7 +109,7 @@ star.enlarge-constellations = Orion, Canis Major
 
 ## 出力先・印刷
 
-生成物は `output.directory` 内の次のサブフォルダに保存されます。未指定時は `output`、同梱の設定ファイルでは `output_inverse` です。
+生成物は `output.directory` 内の次のサブフォルダに保存されます。未指定時は `output/default`、同梱の設定ファイルでは `output/inverse` です。
 
 | サブフォルダ | 内容 |
 |---|---|
