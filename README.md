@@ -125,6 +125,6 @@ star.enlarge-constellations = Orion, Canis Major
 
 本ツールは東京大学地文研究会天文部の Java 版 OTL（Ver. 1.4）をもとにした Python 版です。機能追加・改良を行っており、元の Java 版との完全な動作一致は保証しません。
 
-ライセンスは GNU General Public License v2 (or later) です。詳細は各ソースファイル冒頭のヘッダーを参照してください。
+ソフトウェアのライセンスは GNU General Public License v2 (or later) です。全文は [LICENSE](LICENSE) を参照してください。`data/` の星表などには別の利用条件があり、ESA の Hipparcos / Tycho カタログは非営利利用に限られます。詳細は [NOTICE](NOTICE) を参照してください。
 
 Copyright (C) 2007, 2012-2014, 2026 東京大学地文研究会天文部
