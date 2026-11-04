@@ -1,0 +1,72 @@
+Orb Transform Library (OTL)
+Copyright (C) 2007, 2012-2014, 2026 東京大学地文研究会天文部
+
+本ツールは、東京大学地文研究会天文部の Java 版 OTL（Ver. 1.4）をもとにした
+Python 版です。
+
+このリポジトリには、ライセンスの異なるものが含まれています。ソフトウェアと
+同梱データでは利用条件が異なるため、再配布や商用利用の前に以下を確認して
+ください。
+
+
+1. ソフトウェア
+---------------
+
+otl/、tests/、config/ の内容は、GNU General Public License version 2、または
+（任意で）それ以降のバージョンの条件で配布します。ライセンスヘッダーのない
+ファイルも同様です。全文は LICENSE を参照してください。
+
+本ソフトウェアは無保証です。詳細は LICENSE を参照してください。
+
+
+2. 同梱データ（data/）
+----------------------
+
+data/ の星表・星座データは第三者が作成したものであり、GPL の対象ではありません。
+OTL のライセンスは、これらのデータの利用権を与えるものではありません。
+
+hip_main.dat, tyc_main.dat
+    The Hipparcos and Tycho Catalogues（CDS カタログ番号 I/239）
+
+    Credit: ESA
+    ESA, 1997, The Hipparcos and Tycho Catalogues, ESA SP-1200
+
+    CC BY-NC 3.0 IGO（表示 - 非営利）のもとで配布されています。このライセンス
+    では商用利用は許諾されていません。
+    https://www.cosmos.esa.int/web/hipparcos/catalogues
+    https://www.cosmos.esa.int/web/esdc/terms-and-conditions
+    https://creativecommons.org/licenses/by-nc/3.0/igo/deed.en
+
+rc3.dat
+    Third Reference Catalogue of Bright Galaxies (RC3)（CDS カタログ番号 VII/155）
+
+    de Vaucouleurs, G., de Vaucouleurs, A., Corwin, H. G., Buta, R. J.,
+    Paturel, G., & Fouque, P., 1991, Third Reference Catalogue of Bright
+    Galaxies, Springer-Verlag, New York
+
+    Corwin, H. G., Buta, R. J., & de Vaucouleurs, G., 1994, AJ, 108, 2128
+
+    印刷版の著作権は Springer-Verlag New York, Inc. にあります。電子版の利用条件
+    については、カタログの文書を参照してください。
+    https://heasarc.gsfc.nasa.gov/W3Browse/catalog/rc3.html
+
+IAU88.hlc
+    星座の領域、星座線、構成星の HIP 番号などのデータです。作成者、入手元、
+    ライセンスは確認できていません。
+
+
+3. 生成物（output/）
+--------------------
+
+output/ のファイルは、上記のカタログをもとに OTL で生成したものです。OTL で
+生成した原板を公開・配布・商用利用する場合は、使用したカタログの条件も確認して
+ください。
+
+
+4. 外部ライブラリ
+-----------------
+
+次のライブラリは同梱していません。それぞれのライセンスに従って利用してください。
+
+    実行時: NumPy, Pillow, ReportLab
+    テスト: pypdf
