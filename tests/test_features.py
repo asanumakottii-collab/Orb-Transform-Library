@@ -1,4 +1,5 @@
 import importlib.util
+import itertools
 import math
 import tempfile
 import unittest
@@ -24,7 +25,7 @@ from otl.transformer import (
     _parse_constellation_names,
     _write_assignment_polygons,
 )
-from otl.unit_arrangement import CustomUnitArrangement
+from otl.unit_arrangement import CustomUnitArrangement, StandardUnitArrangement
 
 
 _HAS_REPORTLAB = importlib.util.find_spec("reportlab") is not None
@@ -905,5 +906,85 @@ class OutputFormatCLITests(unittest.TestCase):
 
         self.assertIn("星座を処理しますか。(y/N)", stdout.getvalue())
         transformer.process_constellations.assert_called_once_with(reader, writer)
+
+
+class StandardUnitArrangementTests(unittest.TestCase):
+    _COMBINATIONS = [
+        flags
+        for flags in itertools.product((False, True), repeat=4)
+        if any(flags)
+    ]
+
+    @staticmethod
+    def _all_vectors(arrangement):
+        return [
+            (dir_, arrangement.get_unit_vector(dir_, index))
+            for dir_ in range(2)
+            for index in range(arrangement.number_of_units(dir_))
+        ]
+
+    def test_extra_units_do_not_change_dodecahedral_units(self):
+        base = StandardUnitArrangement(True, True, False, False, False)
+        extra = StandardUnitArrangement(True, True, False, False, True)
+        self.assertEqual(16, base.number_of_units(0))
+        self.assertEqual(21, extra.number_of_units(0))
+        self.assertEqual(21, extra.number_of_units(1))
+        for dir_ in range(2):
+            for index in range(16):
+                self.assertLess(
+                    base.get_unit_vector(dir_, index).minus(
+                        extra.get_unit_vector(dir_, index)).get_mag(),
+                    1e-12,
+                )
+
+    def test_extra_units_alternate_along_the_equator(self):
+        arrangement = StandardUnitArrangement(True, True, False, False, True)
+        extras = [
+            (math.degrees(arrangement.get_unit_vector(dir_, index).get_lng()) % 360, dir_)
+            for dir_ in range(2)
+            for index in range(16, 21)
+        ]
+        for dir_ in range(2):
+            for index in range(16, 21):
+                self.assertAlmostEqual(
+                    0.0, arrangement.get_unit_vector(dir_, index).get_lat(), places=12)
+        extras.sort()
+        for k, (lng, dir_) in enumerate(extras):
+            self.assertAlmostEqual(36.0 * k, lng, places=9)
+            self.assertEqual(k % 2, dir_)
+
+    def test_no_two_units_share_a_direction(self):
+        for flags in self._COMBINATIONS:
+            with self.subTest(flags=flags):
+                vectors = self._all_vectors(StandardUnitArrangement(*flags, True))
+                for a in range(len(vectors)):
+                    for b in range(a):
+                        distance = vectors[a][1].unit_vector().minus(
+                            vectors[b][1].unit_vector()).get_mag()
+                        self.assertGreater(distance, 1e-6)
+
+    def test_extra_units_are_spaced_within_the_field_angle(self):
+        for flags in self._COMBINATIONS:
+            with self.subTest(flags=flags):
+                arrangement = StandardUnitArrangement(*flags, True)
+                base = StandardUnitArrangement(*flags, False)
+                count = arrangement.number_of_units(0) - base.number_of_units(0)
+                self.assertEqual(0, count % 5)
+                self.assertLessEqual(math.pi / count, arrangement._angle + 1e-12)
+
+    def test_every_extra_plate_center_is_assigned_to_its_own_unit(self):
+        transformer = Transformer(
+            0.275, 6500, 355, 400, 50,
+            StandardUnitArrangement(True, True, False, False, True),
+        )
+        generator = PlateAssignmentPolygonGenerator(transformer, samples=12, iterations=10)
+        for dir_ in range(2):
+            self.assertEqual(21, transformer.number_of_units(dir_))
+            for index in range(transformer.number_of_units(dir_)):
+                position = transformer.inverse_transform_unit(dir_, index, 0., 0.)
+                self.assertEqual((dir_, index), transformer.assigned_unit(position))
+            self.assertEqual(12, len(generator.generate(dir_, 20, 38.15)))
+
+
 if __name__ == "__main__":
     unittest.main()

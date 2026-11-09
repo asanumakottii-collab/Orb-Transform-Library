@@ -37,14 +37,16 @@ star.enlarge-constellations = Orion, Canis Major
 | `unit-20` | 正十二面体の頂点の方向（20 か所）にユニットを置く | `no` | `yes` |
 | `unit-30` | 正十二面体の辺の方向（30 か所）にユニットを置く | `yes` | `no` |
 | `unit-60` | 正十二面体の対称性をもつ 60 か所にユニットを置く | `yes` | `no` |
-| `unit-extra` | 赤道付近にユニットを追加する（下の注意を参照） | `yes` | `no` |
+| `unit-extra` | 赤道の方向にユニットを追加する（北天用・南天用を交互に並べる） | `yes` | `no` |
 | `unit.custom` | `yes` でユニットの向きを個別に指定する（上の 5 つは無視） | `no` | — |
 | `unit-position-file` | ユニットの配置図の画像ファイル名。書かなければ出力しない | — | — |
 
 組み合わせとユニット数・画角の関係は [仕組み](mechanism.md#組み合わせと画角) を参照してください。
 
-> [!WARNING]
-> `unit-extra = yes` では、追加分のユニットの向きが正しく計算されません（[仕組み](mechanism.md#2-ユニットの配置)）。省略時の値が `yes` なので、`unit-` の設定を書くときは `unit-extra = no` も明記してください。
+`unit-extra` の並べ方は [仕組み](mechanism.md#赤道のユニットunit-extra) を参照してください。
+
+> [!NOTE]
+> 省略時の値は Java 版に合わせて `unit-12`・`unit-30`・`unit-60`・`unit-extra` が `yes` です。同梱の設定と同じ配置にしたい場合は、`unit-` の 5 つの設定をすべて明記してください。
 
 ### ユニットの個別指定
 

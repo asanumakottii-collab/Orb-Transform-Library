@@ -195,15 +195,39 @@ class StandardUnitArrangement(UnitArrangement):
 
         self._vectors = vectors
 
+        # 赤道上のユニットを、北天用と南天用で交互に並べます。
+        self._extra_vectors = ([], [])
+        if has_unit_extra:
+            self._extra_vectors = self._equatorial_vectors(
+                vectors, int(math.ceil(math.pi / self._angle / 5)) * 5)
+
+    @staticmethod
+    def _equatorial_vectors(existing, count):
+        """赤道を等分する方向を、北天用・南天用それぞれcount個ずつ返します。
+
+        2*count個の方向を赤経0hから π/count ごとに置き、偶数番目を北天用、
+        奇数番目を南天用にします。北天の最も低いユニットの間に北天用が、
+        南天の最も高いユニットの間に南天用が入ります。
+        既存のユニットと同じ方向になる場合は、全体を半間隔ずらします。
+        """
+        step = math.pi / count
+        for offset in (0., step / 2):
+            candidates = [MathVector.from_mag_lng_lat(1., offset + k * step, 0.)
+                          for k in range(2 * count)]
+            # ang() は逆向きのベクトルでNaNになるため、単位ベクトル同士の距離で比べる。
+            if all(c.minus(v.unit_vector()).get_mag() > _EPS
+                   for c in candidates for v in existing):
+                break
+        return candidates[0::2], candidates[1::2]
+
     def get_unit_vector(self, i, j):
-        return self._vectors[j if i == 0 else len(self._vectors) - 1 - j]
+        base = len(self._vectors) // 2
+        if j < base:
+            return self._vectors[j if i == 0 else len(self._vectors) - 1 - j]
+        return self._extra_vectors[i][j - base]
 
     def number_of_units(self, i):
-        return ((6 if self._has_unit_12 else 0)
-                + (10 if self._has_unit_20 else 0)
-                + (15 if self._has_unit_30 else 0)
-                + (30 if self._has_unit_60 else 0)
-                + (int(math.ceil(math.pi / self._angle / 5)) * 5 if self._has_unit_extra else 0))
+        return len(self._vectors) // 2 + len(self._extra_vectors[i])
 
 
 class CustomUnitArrangement(UnitArrangement):
