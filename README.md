@@ -156,4 +156,4 @@ python3 -m unittest discover tests
 
 本ツールは、東京大学地文研究会天文部の Java 版 OTL（Ver. 1.4）をもとにした Python 版（Ver. 1.5）です。機能の追加や改良を行っているため、Java 版と完全に同じ結果になるとは限りません。条件の詳細は [NOTICE](NOTICE) を参照してください。
 
-Copyright (C) 2007, 2012–2014, 2026 東京大学地文研究会天文部
+Copyright (C) 2007, 2012–2014, 2018, 2026 東京大学地文研究会天文部
